@@ -1,0 +1,18 @@
+[project]
+name = "personal-graph-agent"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "langchain>=1.2.10",
+    "langchain-mcp-adapters>=0.2.1",
+    "langchain-ollama>=1.0.1",
+    "langchain-tavily>=0.2.17",
+    "langgraph>=1.0.10",
+    "langgraph-checkpoint-postgres>=3.0.4",
+    "psycopg>=3.3.3",
+    "pytest>=9.0.2",
+    "python-dotenv>=1.2.2",
+    "streamlit>=1.55.0",
+]
