@@ -1,6 +1,7 @@
 from langchain_ollama import ChatOllama
 from langgraph.graph import MessagesState
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.messages import SystemMessage
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from dotenv import load_dotenv
 import os
 
@@ -10,8 +11,7 @@ load_dotenv()
 
 prompt = ChatPromptTemplate.from_messages(
     [
-        (
-            "system",
+        SystemMessage(
             """
             You are a helpful assistant with long-term memory capabilities and access to utility tools.
 
@@ -31,7 +31,7 @@ prompt = ChatPromptTemplate.from_messages(
             - Combine tools when appropriate
             """
         ),
-        ("human", "{question}")
+        MessagesPlaceholder(variable_name="messages")
     ]
 ).partial(tools="\n".join(f"{t.name}: {t.description}"for t in tools))
 
