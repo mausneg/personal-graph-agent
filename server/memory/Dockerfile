@@ -9,4 +9,4 @@ COPY server/memory/memory_server.py memory_server.py
 
 EXPOSE 8003
 
-CMD ["python3", "memory_server.py"]
+CMD ["uvicorn", "memory_server:app", "--host", "0.0.0.0", "--port", "8003"]

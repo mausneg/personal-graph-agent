@@ -1,20 +1,42 @@
 from langchain_ollama import OllamaEmbeddings
 from langgraph.store.postgres import PostgresStore
-from langgraph.store.base import Item, SearchItem
 from mcp.server.fastmcp import FastMCP
+from pydantic import BaseModel
+from typing import Any
 from dotenv import load_dotenv
-from typing import Literal
 import psycopg
 import os
 
 load_dotenv()
 
-mcp = FastMCP("db", port=8003)
+
+class ToolResponse(BaseModel):
+    status_code: int
+    data: Any | None
+
+
+print("memory server starting...")
+
+POSTGRES_USER = os.getenv("POSTGRES_USER")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
+POSTGRES_PORT = os.getenv("POSTGRES_PORT")
+POSTGRES_DB = os.getenv("POSTGRES_DB")
+DB_SERVICE = os.getenv("DB_SERVICE", "localhost")
+DB_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{DB_SERVICE}:{POSTGRES_PORT}/{POSTGRES_DB}"
+
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+
+print(f"Connecting to database at {DB_URL}...")
+print(f"Using Ollama at {OLLAMA_BASE_URL}")
+
+mcp = FastMCP("memory", port=os.getenv("MEMORY_SERVER_PORT"))
+app = mcp.sse_app()
+
 embeddings = OllamaEmbeddings(
-    base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
+    base_url=OLLAMA_BASE_URL,
     model="qwen3-embedding:0.6b",
 )
-conn = psycopg.connect(os.getenv("DB_URL"), autocommit=True, prepare_threshold=0)
+conn = psycopg.connect(DB_URL, autocommit=True, prepare_threshold=0)
 
 
 def embed_text(texts: list[str]) -> list[list[float]]:
@@ -24,32 +46,40 @@ def embed_text(texts: list[str]) -> list[list[float]]:
 store = PostgresStore(conn=conn, index={"embed": embed_text, "dims": 1024})
 store.setup()
 
+
 @mcp.tool()
-def inspect_memory(user_id: str, query: str)-> Literal[list[SearchItem], str]:
+def inspect_memory(user_id: str, query: str, limit: int) -> ToolResponse:
     """
     Inspect relevant memory based on user question.
     Usee this tool when you don't know exactly what information you need but want to find relevant memories based on a query.
-    
+
     Args:
         user_id: user identifier
         query:  user question
+        limit: num of category retrieved
     Return:
         List of relevant memories or failure message
     """
     try:
         namespace = (user_id, "preferences")
-        memories = store.search(namespace, query=query, limit=3)
+        memories = store.search(namespace, query=query, limit=limit)
+        data = "\n".join([f"- Category {m.key}: {m.value}" for m in memories]) 
+
         if not memories:
-            return "No relevant memories found."
-        return memories
+            return ToolResponse(status_code=200, data="No data found").model_dump()
+
+        return ToolResponse(status_code=200, data=data).model_dump()
     except Exception as e:
-        return f"Failed to inspect memory: {e}"    
+        return ToolResponse(
+            status_code=500, data=f"Failed to inspect memory: {e}"
+        ).model_dump()
+
 
 @mcp.tool()
-def save_memory(user_id: str, category: str, information: dict) -> str:
+def save_memory(user_id: str, category: str, information: dict) -> ToolResponse:
     """
     Save user preferences or information for long-term memory.
-    Always use this tool to save new information or update existing information in the user's memory. 
+    Always use this tool to save new information or update existing information in the user's memory.
     The category can be used to organize different types of information (e.g. "food", "hobby", "daily").
 
     Args:
@@ -63,13 +93,17 @@ def save_memory(user_id: str, category: str, information: dict) -> str:
     try:
         namespace = (user_id, "preferences")
         store.put(namespace, category, information)
-        return f"Successfully saved {category} preferences."
+        return ToolResponse(
+            status_code=200, data=f"Successfully saved {category} preferences."
+        )
     except Exception as e:
-        return f"Failed to save {category} preferences: {e}"
+        return ToolResponse(
+            status_code=500, data=f"Failed to save {category} preferences: {e}"
+        )
 
 
 @mcp.tool()
-def retrieve_memory(user_id: str, category: str) -> Literal[Item, str]:
+def retrieve_memory(user_id: str, category: str) -> ToolResponse:
     """
     Retrieve user preferences or information for long-term memory.
     Use this tool when you know the specific category of information you want to retrieve.
@@ -85,9 +119,8 @@ def retrieve_memory(user_id: str, category: str) -> Literal[Item, str]:
         item = store.get(namespace, category)
         if not item:
             raise ValueError(f"No {category} preferences found for user {user_id}.")
-        return item
+        return ToolResponse(status_code=200, data=f"Category {item.key}: {item.value}")
     except Exception as e:
-        return f"Failed retrieve category {category}: {e}"
-
-if __name__ == "__main__":
-    mcp.run(transport="sse")
+        return ToolResponse(
+            status_code=500, data=f"Failed to retrieve category {category}: {e}"
+        )
