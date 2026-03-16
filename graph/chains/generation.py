@@ -17,9 +17,6 @@ prompt = ChatPromptTemplate.from_messages(
             User ID:
             {user_id}
 
-            Current User Memories:
-            {memories}
-
             Available Tools:
             {tools}
 

@@ -102,6 +102,7 @@ async def test_long_term_memory_save() -> None:
 
     pprint(response)
 
+
 @pytest.mark.asyncio
 async def test_long_term_retrieve() -> None:
     conn = await psycopg.AsyncConnection.connect(
@@ -124,7 +125,8 @@ async def test_long_term_retrieve() -> None:
     await conn.close()
 
     pprint(response)
-    
+
+
 @pytest.mark.asyncio
 async def test_long_term_inspect() -> None:
     conn = await psycopg.AsyncConnection.connect(

@@ -9,9 +9,7 @@ load_dotenv()
 
 def test_save_memory_tool_call() -> None:
     messages = HumanMessage("i like to play dota 2 at weekend")
-    response = generation_chain.invoke(
-        {"user_id": "mausneg", "memories": "", "messages": [messages]}
-    )
+    response = generation_chain.invoke({"user_id": "mausneg", "messages": [messages]})
 
     pprint(response)
     assert response.tool_calls[0]["name"] == "save_memory"
@@ -19,9 +17,7 @@ def test_save_memory_tool_call() -> None:
 
 def test_retrieve_memory_tool_call() -> None:
     messages = HumanMessage("what do you know about my daily activity?")
-    response = generation_chain.invoke(
-        {"user_id": "mausneg", "memories": "", "messages": [messages]}
-    )
+    response = generation_chain.invoke({"user_id": "mausneg", "messages": [messages]})
 
     pprint(response)
     assert response.tool_calls[0]["name"] == "retrieve_memory"
@@ -29,9 +25,7 @@ def test_retrieve_memory_tool_call() -> None:
 
 def test_inspect_memory_tool_call() -> None:
     messages = HumanMessage("what do you know about me?")
-    response = generation_chain.invoke(
-        {"user_id": "mausneg", "memories": "", "messages": [messages]}
-    )
+    response = generation_chain.invoke({"user_id": "mausneg", "messages": [messages]})
 
     pprint(response)
     assert response.tool_calls[0]["name"] == "inspect_memory"

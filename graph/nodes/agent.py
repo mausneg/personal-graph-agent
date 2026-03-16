@@ -10,8 +10,6 @@ def agent_node(state: GraphState) -> GraphState:
     messages = state["messages"]
     user_id = state["user_id"]
 
-    response = generation_chain.invoke(
-        {"user_id": user_id, "memories": "", "messages": messages}
-    )
+    response = generation_chain.invoke({"user_id": user_id, "messages": messages})
 
     return {"messages": [response]}

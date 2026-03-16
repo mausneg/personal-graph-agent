@@ -63,7 +63,7 @@ def inspect_memory(user_id: str, query: str, limit: int) -> ToolResponse:
     try:
         namespace = (user_id, "preferences")
         memories = store.search(namespace, query=query, limit=limit)
-        data = "\n".join([f"- Category {m.key}: {m.value}" for m in memories]) 
+        data = "\n".join([f"- Category {m.key}: {m.value}" for m in memories])
 
         if not memories:
             return ToolResponse(status_code=200, data="No data found").model_dump()
