@@ -11,7 +11,9 @@ load_dotenv()
 
 prompt = ChatPromptTemplate.from_messages(
     [
-        SystemMessage("""
+        (
+            "system",
+            """
             You are a helpful assistant with long-term memory capabilities and access to utility tools.
 
             User ID:
@@ -30,9 +32,8 @@ prompt = ChatPromptTemplate.from_messages(
     ]
 ).partial(tools="\n".join(f"{t.name}: {t.description}" for t in tools))
 
-
 llm_with_tools = ChatOllama(
-    base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"), model="qwen3:4b"
+    base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"), model="qwen3.5:4b"
 ).bind_tools(tools)
 
 generation_chain = prompt | llm_with_tools

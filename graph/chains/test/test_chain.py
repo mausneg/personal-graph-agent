@@ -24,7 +24,7 @@ def test_retrieve_memory_tool_call() -> None:
 
 
 def test_inspect_memory_tool_call() -> None:
-    messages = HumanMessage("what do you know about me?")
+    messages = HumanMessage("give me summary about my self")
     response = generation_chain.invoke({"user_id": "mausneg", "messages": [messages]})
 
     pprint(response)
