@@ -1,6 +1,7 @@
 from langchain_ollama import OllamaEmbeddings
 from langgraph.store.postgres import PostgresStore
 from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 from pydantic import BaseModel
 from typing import Any
 from dotenv import load_dotenv
@@ -29,7 +30,24 @@ OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 print(f"Connecting to database at {DB_URL}...")
 print(f"Using Ollama at {OLLAMA_BASE_URL}")
 
-mcp = FastMCP("memory", port=os.getenv("MEMORY_SERVER_PORT"))
+mcp = FastMCP(
+    "memory",
+    host="0.0.0.0",
+    port=int(os.getenv("MEMORY_SERVER_PORT", "8003")),
+    transport_security=TransportSecuritySettings(
+        enable_dns_rebinding_protection=True,
+        allowed_hosts=[
+            "127.0.0.1:*",
+            "localhost:*",
+            "memory_server:*",
+        ],
+        allowed_origins=[
+            "http://127.0.0.1:*",
+            "http://localhost:*",
+            "http://memory_server:*",
+        ],
+    ),
+)
 app = mcp.sse_app()
 
 embeddings = OllamaEmbeddings(

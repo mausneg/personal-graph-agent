@@ -29,7 +29,7 @@ async def test_short_term_memory_answer_yes() -> None:
 
     thread_id = str(uuid.uuid4())
     config = {"configurable": {"thread_id": thread_id}}
-    graph = create_graph(checkpointer)
+    graph = await create_graph(checkpointer)
 
     response = await graph.ainvoke(
         {"user_id": thread_id, "messages": [HumanMessage("hello, my name is mausneg")]},
@@ -62,7 +62,7 @@ async def test_short_term_memory_answer_no() -> None:
 
     thread_id = str(uuid.uuid4())
     config = {"configurable": {"thread_id": thread_id}}
-    graph = create_graph(checkpointer)
+    graph = await create_graph(checkpointer)
 
     response = await graph.ainvoke(
         {
@@ -89,7 +89,7 @@ async def test_long_term_memory_save() -> None:
 
     thread_id = str(uuid.uuid4())
     config = {"configurable": {"thread_id": thread_id}}
-    graph = create_graph(checkpointer)
+    graph = await create_graph(checkpointer)
 
     response = await graph.ainvoke(
         {
@@ -113,7 +113,7 @@ async def test_long_term_retrieve() -> None:
 
     thread_id = str(uuid.uuid4())
     config = {"configurable": {"thread_id": thread_id}}
-    graph = create_graph(checkpointer)
+    graph = await create_graph(checkpointer)
 
     response = await graph.ainvoke(
         {
@@ -137,7 +137,7 @@ async def test_long_term_inspect() -> None:
 
     thread_id = str(uuid.uuid4())
     config = {"configurable": {"thread_id": thread_id}}
-    graph = create_graph(checkpointer)
+    graph = await create_graph(checkpointer)
 
     response = await graph.ainvoke(
         {

@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Form
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from langgraph.checkpoint.postgres import PostgresSaver
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from langchain_core.messages import HumanMessage
 from datetime import datetime
 from dotenv import load_dotenv
@@ -23,19 +24,22 @@ async def chat_with_llm(query: str, user_id: str, session_id: str) -> str:
     async with await psycopg.AsyncConnection.connect(
         DB_URL, autocommit=True, prepare_threshold=0
     ) as conn:
-        checkpointer = PostgresSaver(conn)
+        checkpointer = AsyncPostgresSaver(conn)
         await checkpointer.setup()
 
-        graph = create_graph(checkpointer)
+        graph = await create_graph(checkpointer)
         response = await graph.ainvoke(
             {"messages": [HumanMessage(query)], "user_id": user_id},
-            config={"configurable": {"thread_id": session_id}}
+            config={"configurable": {"thread_id": session_id}},
         )
 
         return response["messages"][-1].content
 
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"]
+)
 
 
 @app.get("/health")

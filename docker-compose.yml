@@ -18,7 +18,7 @@ services:
       start_period: 30s
 
   ollama:
-    image: ollama/ollama:latest
+    image: ollama/ollama:0.18.1
     ports:
       - ":11434"
     entrypoint: >
@@ -50,6 +50,24 @@ services:
     depends_on:
       - ollama
       - database
+
+  agent:
+    build: 
+      context: .
+      dockerfile: graph/Dockerfile
+    container_name: agent
+    env_file:
+      - .env
+    environment:
+      OLLAMA_BASE_URL: "http://ollama:11434"
+      DB_SERVICE: "database"
+      MEMORY_SERVER_SERVICE: "memory_server"
+    ports:
+      - "${AGENT_PORT}:8002"
+    depends_on:
+      - ollama
+      - memory_server
+
 volumes:
   pgdata:
   ollama-data:

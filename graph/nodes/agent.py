@@ -1,12 +1,14 @@
 from dotenv import load_dotenv
 
 from graph.state import GraphState
-from graph.chains.generation import generation_chain
+from graph.chains.generation import get_generation_chain
 
 load_dotenv()
 
 
-def agent_node(state: GraphState) -> GraphState:
+async def agent_node(state: GraphState) -> GraphState:
+    generation_chain = await get_generation_chain()
+
     messages = state["messages"]
     user_id = state["user_id"]
 

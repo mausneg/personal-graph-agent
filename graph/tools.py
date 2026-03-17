@@ -1,16 +1,14 @@
-from langchain_core.tools import tool, BaseTool
-from langchain_tavily import TavilySearch
+from langchain_core.tools import BaseTool
 from langgraph.prebuilt import ToolNode
-from langgraph.store.base import Item
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from dotenv import load_dotenv
-from typing import Literal
 import asyncio
 import os
 
 load_dotenv()
 
 MEMORY_SERVER_PORT = os.getenv("MEMORY_SERVER_PORT")
+MEMORY_SERVER_SERVICE = os.getenv("MEMORY_SERVER_SERVICE", "localhost")
 
 
 async def get_tools() -> list[BaseTool]:
@@ -22,7 +20,7 @@ async def get_tools() -> list[BaseTool]:
                 "transport": "stdio",
             },
             "memory": {
-                "url": f"http://127.0.0.1:{MEMORY_SERVER_PORT}/sse",
+                "url": f"http://{MEMORY_SERVER_SERVICE}:{MEMORY_SERVER_PORT}/sse",
                 "transport": "sse",
             },
         }
@@ -30,10 +28,3 @@ async def get_tools() -> list[BaseTool]:
 
     tools = await client.get_tools()
     return tools
-
-
-tools = asyncio.run(get_tools())
-tool_node = ToolNode(tools)
-
-# print(len(tools))
-# print(tools)
