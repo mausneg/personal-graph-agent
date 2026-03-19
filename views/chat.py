@@ -5,15 +5,15 @@ import os
 import time
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv()   
 
 AGENT_SERVICE = os.getenv("AGENT_SERVICE", "localhost")
 AGENT_PORT = int(os.getenv("AGENT_PORT"))
 
 def word_stream(text: str):
-    for world in text.split():
-        yield world + " "
-        time.sleep(0.05)
+    for world in text:
+        yield world
+        time.sleep(0.01)
 
 def main():
     st.set_page_config("Personal Assistant")

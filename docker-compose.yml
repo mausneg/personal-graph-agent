@@ -68,6 +68,18 @@ services:
       - ollama
       - memory_server
 
+  view:
+    build:
+      context: .
+      dockerfile: views/Dockerfile
+    container_name: view
+    env_file:
+      - .env
+    environment:
+      AGENT_SERVICE: "agent"
+    depends_on:
+      - agent
+        
 volumes:
   pgdata:
   ollama-data:
